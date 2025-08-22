@@ -102,6 +102,23 @@ Variation >> distanceIsRight: aClickEvent [
 	^ aClickEvent trackValue asNumber <= self distance asNumber
 ]
 
+{ #category : #analyzing }
+Variation >> errorsIn: selectionsDictionary [
+
+	| errors |
+	errors := 0.
+	self movie = (selectionsDictionary at: 'movieId' ifAbsent: [  ]) 
+		ifFalse: [ errors := errors + 1 ].
+	self time = (selectionsDictionary at: 'time' ifAbsent: [  ]) 
+		ifFalse: [ errors := errors + 1 ].
+	selectionsDictionary at: 'theatreId' ifPresent: [ :theatreId | 
+		(self distanceFor: theatreId) < self distance asNumber ifFalse: [ 
+			errors := errors + 1 ] ].
+	self seat = (selectionsDictionary at: 'seat' ifAbsent: [  ]) 
+		ifFalse: [ errors := errors + 1 ].
+	^ errors
+]
+
 { #category : #accessing }
 Variation >> id [
 
@@ -149,6 +166,11 @@ Variation >> printOn: aStream [
 
 	super printOn: aStream.
 	aStream << (' (',self version, ')')
+]
+
+{ #category : #accessing }
+Variation >> requiredSelections [
+	self shouldBeImplemented.
 ]
 
 { #category : #accessing }

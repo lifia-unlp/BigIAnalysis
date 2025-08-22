@@ -72,14 +72,18 @@ PurchaseTask >> allTimeClicks [
 { #category : #accessing }
 PurchaseTask >> attempts [
 
-	| areSeats seatVisits pathsToSeat paths |
-	areSeats := [ :task | task stepName beginsWith: '/seat' ].
-	seatVisits := (self pageVisits select: areSeats) asOrderedCollection.
-	pathsToSeat := (self pageVisits splitOn: areSeats) allButLast.
-	paths := pathsToSeat
-		         with: seatVisits
-		         collect: [ :run :end | run copyWith: end ].
-	^ paths
+	| collapsed current |
+	collapsed := OrderedCollection new.
+	current := self interactionRuns first.
+
+	self interactionRuns allButFirst do: [ :next | 
+		(current shouldMergeWith: next)
+			ifTrue: [ current := current mergedWith: next ]
+			ifFalse: [ 
+				collapsed add: current.
+				current := next ] ].
+	collapsed add: current.
+	^ collapsed asOrderedCollection
 ]
 
 { #category : #printing }
@@ -88,7 +92,7 @@ PurchaseTask >> attemptslinesString [
 	^ String streamContents: [ :stream | 
 		  self attempts withIndexDo: [ :attempt :n | 
 			  | corrections |
-			  corrections := attempt flatCollect: #corrections.
+			  corrections := attempt intraVisitCorrections.
 			  self prolificId printOn: stream.
 			  stream nextPut: $,.
 			  self variationId asNumber printOn: stream.
@@ -109,7 +113,13 @@ PurchaseTask >> attemptslinesString [
 			  stream nextPut: $,.
 			  corrections size printOn: stream.
 			  stream nextPut: $,.
-			  (attempt sum: #totalTime) asSeconds printOn: stream.
+			  attempt errorsCount printOn: stream.
+			  stream nextPut: $,.
+			  attempt visitsCount printOn: stream.
+			  stream nextPut: $,.
+			  attempt totalTime asSeconds printOn: stream.
+			  stream nextPut: $,.
+			  attempt hasLargeLoops printOn: stream.
 			  stream cr ] ]
 ]
 
@@ -170,6 +180,12 @@ PurchaseTask >> endTime: anObject [
 	endTime := anObject
 ]
 
+{ #category : #analyzing }
+PurchaseTask >> errors [
+
+	^ self variation errorsIn: self pageVisits last urlParameters
+]
+
 { #category : #accessing }
 PurchaseTask >> errorsCount [
 
@@ -194,6 +210,22 @@ PurchaseTask >> interVisitCorrections [
 	^ self lastSelections
 		  groupedBy: #trackIdPrefix
 		  having: [ :events | (events collect: #trackId) asSet size > 1 ]
+]
+
+{ #category : #accessing }
+PurchaseTask >> interactionRuns [
+
+	| areSeats seatVisits runsToSeat completeRuns |
+	areSeats := [ :visit | visit stepName beginsWith: '/seat' ].
+	seatVisits := (self pageVisits select: areSeats) asOrderedCollection.
+	runsToSeat := (self pageVisits splitOn: areSeats) allButLast.
+	completeRuns := runsToSeat
+		                with: seatVisits
+		                collect: [ :run :end | 
+		                InteractionRun visits: (run copyWith: end) ].
+	^ seatVisits
+		  ifEmpty: [ (InteractionRun visits: self pageVisits) inOrderedCollection ]
+		  ifNotEmpty: [ completeRuns ]
 ]
 
 { #category : #accessing }

@@ -70,6 +70,12 @@ PageVisit >> endTime: anObject [
 	endTime := anObject
 ]
 
+{ #category : #accessing }
+PageVisit >> errorsCount [
+
+	^ self variation errorsIn: self pageVisits last urlParameters
+]
+
 { #category : #testing }
 PageVisit >> hasCorrections [
 
@@ -79,10 +85,22 @@ PageVisit >> hasCorrections [
 		  (clicksGroup collect: #trackValue as: Set) size > 1 ]
 ]
 
+{ #category : #testing }
+PageVisit >> hasSelectionClicks [
+
+	^ self clicks anySatisfy: #isSelectionClick
+]
+
 { #category : #initialization }
 PageVisit >> initialize [
 
 	clicks := OrderedCollection new
+]
+
+{ #category : #accessing }
+PageVisit >> pageName [
+
+	^ (self stepName copyUpToSubstring: '?') allButFirst
 ]
 
 { #category : #printing }
