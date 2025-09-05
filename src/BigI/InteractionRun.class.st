@@ -61,6 +61,30 @@ InteractionRun >> intraVisitCorrections [
 	^ self pageVisits flatCollect: #corrections
 ]
 
+{ #category : #testing }
+InteractionRun >> largeLoops [
+
+	| largeLoopSequence loops |
+	largeLoopSequence := { 'show'. 'date'. 'theatre' }.
+	loops := OrderedCollection new.
+	self pageVisits doWithIndex: [ :visit :index | 
+		| candidateLoop |
+		visit pageName = 'show' & (index < (self pageVisits size - 2)) 
+			ifTrue: [ 
+				candidateLoop := self pageVisits copyFrom: index to: index + 2.
+				largeLoopSequence = (candidateLoop collect: #pageName) ifTrue: [ 
+					loops add: candidateLoop ] ] ].
+	^ loops
+]
+
+{ #category : #accessing }
+InteractionRun >> largeLoopsTime [
+
+	^ self largeLoops flattened
+		  inject: Duration zero
+		  into: [ :total :visit | total + visit totalTime ]
+]
+
 { #category : #analyzing }
 InteractionRun >> mergedWith: anInteractionRun [
 

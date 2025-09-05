@@ -120,6 +120,8 @@ PurchaseTask >> attemptslinesString [
 			  attempt totalTime asSeconds printOn: stream.
 			  stream nextPut: $,.
 			  attempt hasLargeLoops printOn: stream.
+			  stream nextPut: $,.
+			  attempt largeLoopsTime asSeconds printOn: stream.
 			  stream cr ] ]
 ]
 

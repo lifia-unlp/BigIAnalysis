@@ -79,7 +79,7 @@ BigIScriptsRunner >> writeCorrectionsPerAttemptOn: filename [
 	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
 		#( prolific_id variationId attempt_number wrong_to_right
 		   right_to_wrong wrong_to_wrong right_to_right all_corrections
-		   errors visited_pages added_time_seconds large_loops)
+		   errors visited_pages added_time_seconds large_loops large_loops_time)
 			do: [ :header | stream << header ]
 			separatedBy: [ stream << ',' ].
 		stream cr.
