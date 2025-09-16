@@ -4,16 +4,17 @@ This is a sequence of PageVisits that models an interaction from either
 - a visit to the seat selection page
 "
 Class {
-	#name : #InteractionRun,
-	#superclass : #Object,
+	#name : 'InteractionRun',
+	#superclass : 'Object',
 	#instVars : [
 		'pageVisits',
 		'finalSelections'
 	],
-	#category : #BigI
+	#category : 'BigI',
+	#package : 'BigI'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 InteractionRun class >> visits: somePageVisits [
 
 	^ self new
@@ -21,25 +22,25 @@ InteractionRun class >> visits: somePageVisits [
 		  yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 InteractionRun >> errorsCount [
 
 	^ self variation errorsIn: self pageVisits last urlParameters
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 InteractionRun >> finalSelections [
 
 	^ finalSelections
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 InteractionRun >> finalSelections: anObject [
 
 	finalSelections := anObject
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 InteractionRun >> hasLargeLoops [
 
 	| largeLoopSequence candidateLoopStart candidateLoop |
@@ -55,13 +56,13 @@ InteractionRun >> hasLargeLoops [
 	^ (candidateLoop first: 2) noneSatisfy: #hasSelectionClicks
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 InteractionRun >> intraVisitCorrections [
 
 	^ self pageVisits flatCollect: #corrections
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 InteractionRun >> largeLoops [
 
 	| largeLoopSequence loops |
@@ -77,7 +78,7 @@ InteractionRun >> largeLoops [
 	^ loops
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 InteractionRun >> largeLoopsTime [
 
 	^ self largeLoops flattened
@@ -85,7 +86,7 @@ InteractionRun >> largeLoopsTime [
 		  into: [ :total :visit | total + visit totalTime ]
 ]
 
-{ #category : #analyzing }
+{ #category : 'analyzing' }
 InteractionRun >> mergedWith: anInteractionRun [
 
 	"Attempt to merge with anInteractionRun if both are part of the same attempt"
@@ -95,19 +96,19 @@ InteractionRun >> mergedWith: anInteractionRun [
 		  ifFalse: [ self ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 InteractionRun >> pageVisits [
 
 	^ pageVisits
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 InteractionRun >> populateFinalSelections [
 
 	self finalSelections: self pageVisits last urlParameters
 ]
 
-{ #category : #analyzing }
+{ #category : 'analyzing' }
 InteractionRun >> shouldMergeWith: anInteractionRun [
 
 	"Determine whether I should merge with anInteractionRun, i.e. we are part of the same attempt"
@@ -122,32 +123,48 @@ InteractionRun >> shouldMergeWith: anInteractionRun [
 	^ sameSelections & noCorrections
 ]
 
-{ #category : #analyzing }
+{ #category : 'analyzing' }
 InteractionRun >> totalTime [
 
 	^ self pageVisits sum: #totalTime
 ]
 
-{ #category : #accessing }
+{ #category : 'printing' }
+InteractionRun >> traceString [
+
+	^ String streamContents: [ :stream |
+		  self visits
+			  do: [ :visit | visit printTraceOn: stream ]
+			  separatedBy: [ stream << ' -> ' ] ]
+]
+
+{ #category : 'accessing' }
 InteractionRun >> variation [
 
 	^ self pageVisits last variation
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
+InteractionRun >> visits [
+	"Just an alias for convenience"
+
+	^ pageVisits
+]
+
+{ #category : 'accessing' }
 InteractionRun >> visits: somePageVisits [
 
 	pageVisits := somePageVisits.
 	self populateFinalSelections
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 InteractionRun >> visitsCount [
 
 	^ self pageVisits size
 ]
 
-{ #category : #copying }
+{ #category : 'copying' }
 InteractionRun >> withExtraVisits: aCollection [
 
 	^ self copy visits: self pageVisits , aCollection

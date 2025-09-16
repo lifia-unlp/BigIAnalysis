@@ -1,6 +1,6 @@
 Class {
-	#name : #Variation,
-	#superclass : #Object,
+	#name : 'Variation',
+	#superclass : 'Object',
 	#instVars : [
 		'id',
 		'movie',
@@ -13,16 +13,17 @@ Class {
 	#classVars : [
 		'variations'
 	],
-	#category : #BigI
+	#category : 'BigI',
+	#package : 'BigI'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 Variation class >> all [
 
 	^ self variations
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 Variation class >> fromJSON: aDictionary [
 
 	^ self new
@@ -36,13 +37,13 @@ Variation class >> fromJSON: aDictionary [
 		  yourself
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 Variation class >> resetVariations [
 
 	variations := nil
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 Variation class >> variations [
 
 	variations ifNil: [ 
@@ -55,31 +56,31 @@ Variation class >> variations [
 	^ variations
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 Variation class >> withId: anId [
 
 	^ self all detect: [ :variation | variation id asNumber == anId asNumber ]
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 Variation >> dateIsRight: aClickEvent [
 
 	^ true
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> distance [
 
 	^ distance
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> distance: aString [
 
 	distance := aString
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 Variation >> distanceFor: aTheatreId [
 
 	| distances |
@@ -94,7 +95,7 @@ Variation >> distanceFor: aTheatreId [
 	^ (distances at: aTheatreId asNumber) asNumber
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 Variation >> distanceIsRight: aClickEvent [
 
 	"Only for V2"
@@ -102,7 +103,7 @@ Variation >> distanceIsRight: aClickEvent [
 	^ aClickEvent trackValue asNumber <= self distance asNumber
 ]
 
-{ #category : #analyzing }
+{ #category : 'analyzing' }
 Variation >> errorsIn: selectionsDictionary [
 
 	| errors |
@@ -119,79 +120,79 @@ Variation >> errorsIn: selectionsDictionary [
 	^ errors
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> id [
 
 	^ id
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> id: anObject [
 
 	id := anObject
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> iterations [
 
 	^ iterations
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> iterations: anObject [
 
 	iterations := anObject
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> movie [
 
 	^ movie
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> movie: anObject [
 
 	movie := anObject
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 Variation >> movieIsRight: aClickEvent [
 
 	^ self movie = aClickEvent trackValue
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> printOn: aStream [
 
 	super printOn: aStream.
 	aStream << (' (',self version, ')')
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> requiredSelections [
 	self shouldBeImplemented.
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> seat [
 
 	^ seat
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> seat: aString [
 
 	seat := aString
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 Variation >> seatIsRight: aClickEvent [
 
 	^ self seat = aClickEvent trackValue
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 Variation >> selectionClickIsRight: aClickEvent [
 
 	| methodName |
@@ -199,37 +200,37 @@ Variation >> selectionClickIsRight: aClickEvent [
 	^ self perform: methodName with: aClickEvent
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 Variation >> theatreIsRight: aClickEvent [
 
 	^ (self distanceFor: aClickEvent trackValue) < self distance asNumber
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> time [
 
 	^ time
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> time: anObject [
 
 	time := anObject
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 Variation >> timeIsRight: aClickEvent [
 
 	^ self time = aClickEvent trackValue
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> version [
 
 	^ version
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Variation >> version: anObject [
 
 	version := anObject
