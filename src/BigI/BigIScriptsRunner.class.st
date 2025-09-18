@@ -156,7 +156,7 @@ BigIScriptsRunner >> writeTasksSummariesOn: filename [
 	"Format agreed on Sep 17"
 
 	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
-		#( prolific_id variationId type trace)
+		#( prolific_id variationId iterations type smallLoops smallLoopsTime smallLoopsTimeSecs largeLoops largeLoopsTime largeLoopsTimeSecs toRight toWrong time timeSecs trace)
 			do: [ :header | stream << header ]
 			separatedBy: [ stream << ',' ].
 		stream cr.

@@ -171,6 +171,30 @@ PurchaseTask >> correctionsCount [
 ]
 
 { #category : #accessing }
+PurchaseTask >> correctionsToRight [
+
+	^ self pageVisits flatCollect: #correctionsToRight
+]
+
+{ #category : #accessing }
+PurchaseTask >> correctionsToRightCount [
+
+	^ self correctionsToRight size
+]
+
+{ #category : #accessing }
+PurchaseTask >> correctionsToWrong [
+
+	^ self pageVisits flatCollect: #correctionsToWrong
+]
+
+{ #category : #accessing }
+PurchaseTask >> correctionsToWrongCount [
+
+	^ self correctionsToWrong size
+]
+
+{ #category : #accessing }
 PurchaseTask >> dateAndTime [
 
 	^ dateAndTime
@@ -240,6 +264,12 @@ PurchaseTask >> hasLargeLoops [
 	^ (candidateLoop first: 2) noneSatisfy: #hasSelectionClicks
 ]
 
+{ #category : #testing }
+PurchaseTask >> hasSimpleBacktracks [
+
+	^ self simpleBacktracks size > 0
+]
+
 { #category : #accessing }
 PurchaseTask >> interVisitCorrections [
 
@@ -301,6 +331,12 @@ PurchaseTask >> largeLoops [
 ]
 
 { #category : #accessing }
+PurchaseTask >> largeLoopsCount [
+
+	^ self largeLoops size
+]
+
+{ #category : #accessing }
 PurchaseTask >> largeLoopsTime [
 
 	^ self largeLoops flattened
@@ -327,27 +363,32 @@ PurchaseTask >> lineString [
 		  stream << ','.
 		  stream << self variationId.
 		  stream << ','.
+		  stream << self plannedIterations asString.
+		  stream << ','.
 		  stream << self taskType.
+		  stream << ','.
+		  stream << self smallLoopsCount asString.
+		  stream << ','.
+		  stream << self smallLoopsTime asString.
+		  stream << ','.
+		  stream << self smallLoopsTime asSeconds asString.
+		  stream << ','.
+		  stream << self largeLoopsCount asString.
+		  stream << ','.
+		  stream << self largeLoopsTime asString.
+		  stream << ','.
+		  stream << self largeLoopsTime asSeconds asString.
+		  stream << ','.
+		  stream << self correctionsToRightCount asString.
+		  stream << ','.
+		  stream << self correctionsToWrongCount asString.
+		  stream << ','.
+		  stream << self totalTime asString.
+		  stream << ','.
+		  stream << self totalTime asSeconds asString.
 		  stream << ','.
 		  stream << self traceString.
 		  stream cr ]
-]
-
-{ #category : #printing }
-PurchaseTask >> lineString_ [
-
-	^ String streamContents: [ :stream | 
-		  self pageVisits do: [ :visit | 
-			  stream << (visit stepName copyUpToSubstring: '?') allButFirst.
-			  stream nextPut: $,.
-			  visit clicks do: [ :click | 
-				  click element printOn: stream.
-				  stream nextPut: $,.
-				  click trackId printOn: stream.
-				  stream nextPut: $,.
-				  click dateAndTime printOn: stream.
-				  stream nextPut: $,].
-			  stream cr ] ]
 ]
 
 { #category : #selections }
@@ -413,11 +454,27 @@ PurchaseTask >> simpleBacktracks [
 	^ backtracks
 ]
 
+{ #category : #accessing }
+PurchaseTask >> smallLoopsCount [
+
+	^ self simpleBacktracks size
+]
+
+{ #category : #accessing }
+PurchaseTask >> smallLoopsTime [
+
+	^ self simpleBacktracks flattened
+		  inject: Duration zero
+		  into: [ :total :visit | total + visit totalTime ]
+]
+
 { #category : #'accessing - task types' }
 PurchaseTask >> taskType [
 
 	self type1Condition ifTrue: [ ^ '1' ].
 	self type2Condition ifTrue: [ ^ '2' ].
+	self type3aCondition ifTrue: [ ^ '3a' ].
+	self type3bCondition ifTrue: [ ^ '3b' ].
 	^ 'other'
 ]
 
@@ -430,6 +487,12 @@ PurchaseTask >> timeSelections [
 	^ allParameters
 		  select: [ :parameters | parameters includesKey: 'time' ]
 		  thenCollect: [ :parameters | parameters at: 'time' ]
+]
+
+{ #category : #analyzing }
+PurchaseTask >> totalTime [
+
+	^ self pageVisits sum: #totalTime
 ]
 
 { #category : #printing }
@@ -451,6 +514,18 @@ PurchaseTask >> type1Condition [
 PurchaseTask >> type2Condition [
 
 	^ self isStraightRun & self hasCorrections
+]
+
+{ #category : #'accessing - task types' }
+PurchaseTask >> type3aCondition [
+
+	^ self hasSimpleBacktracks & self hasLargeLoops not
+]
+
+{ #category : #'accessing - task types' }
+PurchaseTask >> type3bCondition [
+
+	^ self hasLargeLoops
 ]
 
 { #category : #accessing }
