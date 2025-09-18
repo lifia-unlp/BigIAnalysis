@@ -1,1 +1,1 @@
-Package { #name : 'BigI' }
+Package { #name : #BigI }

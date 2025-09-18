@@ -1,6 +1,6 @@
 Class {
-	#name : 'PageVisit',
-	#superclass : 'Object',
+	#name : #PageVisit,
+	#superclass : #Object,
 	#instVars : [
 		'version',
 		'stepName',
@@ -10,11 +10,10 @@ Class {
 		'transitionDuration',
 		'variation'
 	],
-	#category : 'BigI',
-	#package : 'BigI'
+	#category : #BigI
 }
 
-{ #category : 'instance creation' }
+{ #category : #'instance creation' }
 PageVisit class >> fromJSON: aJSON [
 
 	| newVisit |
@@ -28,19 +27,19 @@ PageVisit class >> fromJSON: aJSON [
 	^ newVisit
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> clicks [
 
 	^ clicks
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> clicks: anObject [
 
 	clicks := anObject
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> corrections [
 
 	| valueChangeSequences |
@@ -53,92 +52,92 @@ PageVisit >> corrections [
 		  Correction fromClicks: clicksSequence andVariation: self variation ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> correctionsCount [
 
 	^ self corrections size
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> correctionsToRight [
 
 	^ self corrections select: #finalValueIsRight
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> correctionsToRightCount [
 
 	^ self corrections count: #finalValueIsRight
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> correctionsToWrong [
 
 	^ self corrections select: #finalValueIsWrong
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> correctionsToWrongCount [
 
 	^ self corrections count: #finalValueIsWrong
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> endTime [
 
 	^ endTime
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> endTime: anObject [
 
 	endTime := anObject
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> errorsCount [
 
 	^ self variation errorsIn: self pageVisits last urlParameters
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 PageVisit >> hasCorrections [
 
-	^ self clicks
-		  groupedBy: [ :click | click trackIdPrefix ]
-		  having: [ :clicksGroup | 
-		  (clicksGroup collect: #trackValue as: Set) size > 1 ]
+	^ self correctionsCount > 0
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 PageVisit >> hasSelectionClicks [
 
 	^ self clicks anySatisfy: #isSelectionClick
 ]
 
-{ #category : 'initialization' }
+{ #category : #initialization }
 PageVisit >> initialize [
 
 	clicks := OrderedCollection new
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> pageName [
 
 	^ (self stepName copyUpToSubstring: '?') allButFirst
 ]
 
-{ #category : 'printing' }
+{ #category : #printing }
 PageVisit >> printOn: aStream [
 	super printOn: aStream.
 	aStream << (' (',(self stepName copyUpTo: $?) allButFirst, ')')  
 ]
 
-{ #category : 'printing' }
+{ #category : #printing }
 PageVisit >> printTraceOn: aStream [
 
 	aStream << (self stepName copyUpTo: $?) allButFirst.
 	aStream space.
+	self selectionClicksCount > 0 ifTrue: [
+		self selectionClicksCount printOn: aStream.
+		aStream << 's ' ].
 	self correctionsToRightCount > 0 ifTrue: [
 		self correctionsToRightCount printOn: aStream.
 		aStream << 'c ' ].
@@ -147,56 +146,55 @@ PageVisit >> printTraceOn: aStream [
 		aStream << 'e ' ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #testing }
+PageVisit >> selectionClicksCount [
+
+	^ self clicks count: #isSelectionClick
+]
+
+{ #category : #accessing }
 PageVisit >> startTime [
 
 	^ startTime
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> startTime: anObject [
 
 	startTime := anObject
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> stepName [
 
 	^ stepName
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> stepName: anObject [
 
 	stepName := anObject
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> totalTime [
 
 	^ self endTime - self startTime + self transitionDuration
 ]
 
-{ #category : 'printing' }
-PageVisit >> traceString [
-
-	String streamContents: [ :stream |
-		stream << (self stepName copyUpTo: $?) allButFirst ]
-]
-
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> transitionDuration [
 
 	^ transitionDuration
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> transitionDuration: anObject [
 
 	transitionDuration := anObject
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> urlParameters [
 
 	| parameters dictionary |
@@ -209,25 +207,25 @@ PageVisit >> urlParameters [
 	^ dictionary
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> variation [
 
 	^ variation
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> variation: anObject [
 
 	variation := anObject
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> version [
 
 	^ version
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PageVisit >> version: anObject [
 
 	version := anObject

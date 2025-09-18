@@ -1,6 +1,6 @@
 Class {
-	#name : 'PurchaseTask',
-	#superclass : 'Object',
+	#name : #PurchaseTask,
+	#superclass : #Object,
 	#instVars : [
 		'prolificId',
 		'variationId',
@@ -9,11 +9,10 @@ Class {
 		'endTime',
 		'variation'
 	],
-	#category : 'BigI',
-	#package : 'BigI'
+	#category : #BigI
 }
 
-{ #category : 'instance creation' }
+{ #category : #'instance creation' }
 PurchaseTask class >> fromJSON: aJSON [
 
 	| subjectValue numericKeys fixedText prolificId |
@@ -40,37 +39,37 @@ PurchaseTask class >> fromJSON: aJSON [
 		  yourself
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> allClicks [
 
 	^ self pageVisits flatCollect: [ :visit | visit clicks ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> allMovieClicks [
 
 	^ self clicksStartingWith: 'movie-card'
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> allScheduleClicks [
 
 	^ self clicksStartingWith: 'schedule'
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> allTheatreClicks [
 
 	^ self clicksStartingWith: 'theatre-card'
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> allTimeClicks [
 
 	^ self clicksStartingWith: 'show-time'
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> attempts [
 
 	| collapsed current |
@@ -87,7 +86,7 @@ PurchaseTask >> attempts [
 	^ collapsed asOrderedCollection
 ]
 
-{ #category : 'printing' }
+{ #category : #printing }
 PurchaseTask >> attemptslinesString [
 
 	^ String streamContents: [ :stream | 
@@ -126,26 +125,38 @@ PurchaseTask >> attemptslinesString [
 			  stream cr ] ]
 ]
 
-{ #category : 'selections-by click' }
+{ #category : #testing }
+PurchaseTask >> backtrackSequences [
+
+	^ #( v1 theatre date show seat summary ) overlappingPairsCollect: [ 
+		  :prev 
+		  :next | 
+		  { 
+			  next.
+			  prev.
+			  next } collect: #asString ]
+]
+
+{ #category : #'selections-by click' }
 PurchaseTask >> clickedMovieSelections [
 
 	^ self allMovieClicks collect: #trackValue
 ]
 
-{ #category : 'selections-by click' }
+{ #category : #'selections-by click' }
 PurchaseTask >> clickedTimeSelections [
 
 	^ self allTimeClicks collect: #trackValue
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> clicksStartingWith: prefix [
 
 	^ self allClicks select: [ :click | 
 		  click trackId isNotNil and: [ click trackId beginsWith: prefix ] ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> completionTime [
 
 	^ self pageVisits
@@ -153,61 +164,83 @@ PurchaseTask >> completionTime [
 		  into: [ :durartion :visit | durartion + visit totalTime ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> correctionsCount [
 
 	^ self pageVisits sumNumbers: [ :visit | visit correctionsCount ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> dateAndTime [
 
 	^ dateAndTime
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> dateAndTime: anObject [
 
 	dateAndTime := anObject
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> endTime [
 
 	^ endTime
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> endTime: anObject [
 
 	endTime := anObject
 ]
 
-{ #category : 'analyzing' }
+{ #category : #analyzing }
 PurchaseTask >> errors [
 
 	^ self variation errorsIn: self pageVisits last urlParameters
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> errorsCount [
 
 	^ self wrongSelections
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> fullTime [
 
 	^ self endTime - self dateAndTime
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
+PurchaseTask >> hasCorrections [
+
+	^ self correctionsCount > 0
+]
+
+{ #category : #testing }
 PurchaseTask >> hasErrors [
 
 	^ self wrongSelections > 0
 ]
 
-{ #category : 'accessing' }
+{ #category : #testing }
+PurchaseTask >> hasLargeLoops [
+
+	| largeLoopSequence candidateLoopStart candidateLoop |
+	largeLoopSequence := { 'show'. 'date'. 'theatre' }.
+	candidateLoopStart := (self pageVisits collect: #pageName)
+		                      asOrderedCollection
+		                      indexOfSubCollection: largeLoopSequence
+		                      startingAt: 1
+		                      ifAbsent: [ ^ false ].
+	candidateLoop := self pageVisits
+		                 copyFrom: candidateLoopStart
+		                 to: candidateLoopStart + 2.
+	^ (candidateLoop first: 2) noneSatisfy: #hasSelectionClicks
+]
+
+{ #category : #accessing }
 PurchaseTask >> interVisitCorrections [
 
 	^ self lastSelections
@@ -215,7 +248,7 @@ PurchaseTask >> interVisitCorrections [
 		  having: [ :events | (events collect: #trackId) asSet size > 1 ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> interactionRuns [
 
 	| areSeats seatVisits runsToSeat completeRuns |
@@ -231,13 +264,51 @@ PurchaseTask >> interactionRuns [
 		  ifNotEmpty: [ completeRuns ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> intraVisitCorrections [
 
 	^ self pageVisits flatCollect: #corrections
 ]
 
-{ #category : 'accessing' }
+{ #category : #'private - testing' }
+PurchaseTask >> isPartOfLargeLoop: aSequence [
+
+	^ self largeLoops anySatisfy: [ :largeLoop | 
+		  largeLoop includes: aSequence first ]
+]
+
+{ #category : #testing }
+PurchaseTask >> isStraightRun [
+
+	^ (self pageVisits collect: #pageName)
+	  = #( v1 theatre date show seat summary )
+]
+
+{ #category : #accessing }
+PurchaseTask >> largeLoops [
+
+	| largeLoopSequence loops |
+	largeLoopSequence := { 'show'. 'date'. 'theatre' }.
+	loops := OrderedCollection new.
+	self pageVisits doWithIndex: [ :visit :index | 
+		| candidateLoop |
+		visit pageName = 'show' & (index < (self pageVisits size - 2)) 
+			ifTrue: [ 
+				candidateLoop := self pageVisits copyFrom: index to: index + 2.
+				largeLoopSequence = (candidateLoop collect: #pageName) ifTrue: [ 
+					loops add: candidateLoop ] ] ].
+	^ loops
+]
+
+{ #category : #accessing }
+PurchaseTask >> largeLoopsTime [
+
+	^ self largeLoops flattened
+		  inject: Duration zero
+		  into: [ :total :visit | total + visit totalTime ]
+]
+
+{ #category : #accessing }
 PurchaseTask >> lastSelections [
 
 	| withNils |
@@ -248,8 +319,22 @@ PurchaseTask >> lastSelections [
 	^ withNils copyWithout: nil
 ]
 
-{ #category : 'printing' }
+{ #category : #printing }
 PurchaseTask >> lineString [
+
+	^ String streamContents: [ :stream | 
+		  stream << self prolificId.
+		  stream << ','.
+		  stream << self variationId.
+		  stream << ','.
+		  stream << self taskType.
+		  stream << ','.
+		  stream << self traceString.
+		  stream cr ]
+]
+
+{ #category : #printing }
+PurchaseTask >> lineString_ [
 
 	^ String streamContents: [ :stream | 
 		  self pageVisits do: [ :visit | 
@@ -265,7 +350,7 @@ PurchaseTask >> lineString [
 			  stream cr ] ]
 ]
 
-{ #category : 'selections' }
+{ #category : #selections }
 PurchaseTask >> movieSelections [
 
 	| allParameters |
@@ -276,38 +361,67 @@ PurchaseTask >> movieSelections [
 		  thenCollect: [ :parameters | parameters at: 'movieId' ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> pageVisits [
 
 	^ pageVisits
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> pageVisits: anObject [
 
 	pageVisits := anObject.
 	pageVisits do: [ :visit | visit variation: self variation ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> plannedIterations [
 
 	^ self variation iterations asNumber
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> prolificId [
 
 	^ prolificId
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> prolificId: anObject [
 
 	prolificId := anObject
 ]
 
-{ #category : 'selections' }
+{ #category : #testing }
+PurchaseTask >> simpleBacktracks [
+
+	| candidateBacktracks backtracks |
+	candidateBacktracks := OrderedCollection new.
+	self pageVisits doWithIndex: [ :visit :index | 
+		| largeEnough |
+		largeEnough := index <= (self pageVisits size - 2).
+		largeEnough ifTrue: [ 
+			| eachSequence |
+			eachSequence := self pageVisits copyFrom: index to: index + 2.
+			(self backtrackSequences includes:
+				 (eachSequence collect: #pageName)) ifTrue: [ 
+				candidateBacktracks add: eachSequence ] ] ].
+
+	backtracks := candidateBacktracks reject: [ :candidate | 
+		              self isPartOfLargeLoop: candidate ].
+
+	^ backtracks
+]
+
+{ #category : #'accessing - task types' }
+PurchaseTask >> taskType [
+
+	self type1Condition ifTrue: [ ^ '1' ].
+	self type2Condition ifTrue: [ ^ '2' ].
+	^ 'other'
+]
+
+{ #category : #selections }
 PurchaseTask >> timeSelections [
 
 	| allParameters |
@@ -318,32 +432,53 @@ PurchaseTask >> timeSelections [
 		  thenCollect: [ :parameters | parameters at: 'time' ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #printing }
+PurchaseTask >> traceString [
+
+	^ String streamContents: [ :stream | 
+		  self pageVisits
+			  do: [ :visit | visit printTraceOn: stream ]
+			  separatedBy: [ stream << ' -> ' ] ]
+]
+
+{ #category : #'accessing - task types' }
+PurchaseTask >> type1Condition [
+
+	^ self isStraightRun & self hasCorrections not & self hasErrors not
+]
+
+{ #category : #'accessing - task types' }
+PurchaseTask >> type2Condition [
+
+	^ self isStraightRun & self hasCorrections
+]
+
+{ #category : #accessing }
 PurchaseTask >> variation [
 
 	^ variation ifNil: [ variation := Variation withId: self variationId ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> variationId [
 
 	^ variationId
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 PurchaseTask >> variationId: anObject [
 
 	variationId := anObject
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 PurchaseTask >> wrongMovieCount [
 
 	^ self movieSelections collapseRuns count: [ :movieId | 
 		  movieId ~= self variation movie ]
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 PurchaseTask >> wrongSelections [
 
 	| wrongMovieCount wrongTimeCount |
@@ -352,7 +487,7 @@ PurchaseTask >> wrongSelections [
 	^ wrongMovieCount + wrongTimeCount
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 PurchaseTask >> wrongTimeCount [
 
 	^ self timeSelections collapseRuns count: [ :time | 

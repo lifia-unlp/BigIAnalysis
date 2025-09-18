@@ -1,6 +1,6 @@
 Class {
-	#name : 'BigIScriptsRunner',
-	#superclass : 'Object',
+	#name : #BigIScriptsRunner,
+	#superclass : #Object,
 	#instVars : [
 		'variations',
 		'tasks'
@@ -8,23 +8,22 @@ Class {
 	#classVars : [
 		'Instance'
 	],
-	#category : 'BigI',
-	#package : 'BigI'
+	#category : #BigI
 }
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 BigIScriptsRunner class >> instance [
 
 	^ Instance ifNil: [ Instance := self new ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 BigIScriptsRunner class >> resetInstance [
 
 	Instance := nil
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 BigIScriptsRunner >> allPurchases [
 
 	^ (self directory , 'experiments/') asFileReference files collect: [ 
@@ -33,13 +32,13 @@ BigIScriptsRunner >> allPurchases [
 			  (NeoJSONReader fromString: fileReference contents) ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 BigIScriptsRunner >> directory [
 
 	^ '/Users/juliangrigera/Desktop/Big-I/'
 ]
 
-{ #category : 'intializing' }
+{ #category : #intializing }
 BigIScriptsRunner >> initialize [
 
 	tasks := (self directory , 'experiments/') asFileReference files 
@@ -50,31 +49,31 @@ BigIScriptsRunner >> initialize [
 	variations := Variation all
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 BigIScriptsRunner >> tasks [
 
 	^ tasks
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 BigIScriptsRunner >> tasks: anObject [
 
 	tasks := anObject
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 BigIScriptsRunner >> variations [
 
 	^ variations
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 BigIScriptsRunner >> variations: anObject [
 
 	variations := anObject
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 BigIScriptsRunner >> writeCorrectionsPerAttemptOn: filename [
 
 	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
@@ -89,7 +88,7 @@ BigIScriptsRunner >> writeCorrectionsPerAttemptOn: filename [
 			thenDo: [ :task | stream << task attemptslinesString ] ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 BigIScriptsRunner >> writeDataOn: filename [
 
 	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
@@ -115,7 +114,7 @@ BigIScriptsRunner >> writeDataOn: filename [
 			stream cr ] ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 BigIScriptsRunner >> writeIdsAndTimesOn: filename [
 
 	| byId |
@@ -133,7 +132,7 @@ BigIScriptsRunner >> writeIdsAndTimesOn: filename [
 			stream cr ] ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 BigIScriptsRunner >> writeSummarizedDataOn: filename [
 
 	| byId |
@@ -149,4 +148,19 @@ BigIScriptsRunner >> writeSummarizedDataOn: filename [
 			stream << ','.
 			stream << totalDuration printString.
 			stream cr ] ]
+]
+
+{ #category : #accessing }
+BigIScriptsRunner >> writeTasksSummariesOn: filename [
+
+	"Format agreed on Sep 17"
+
+	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
+		#( prolific_id variationId type trace)
+			do: [ :header | stream << header ]
+			separatedBy: [ stream << ',' ].
+		stream cr.
+		self tasks
+			select: [ :task | task variation version = 'v1' ]
+			thenDo: [ :task | stream << task lineString ] ]
 ]

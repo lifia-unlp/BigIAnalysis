@@ -1,16 +1,15 @@
 Class {
-	#name : 'ClickEvent',
-	#superclass : 'Object',
+	#name : #ClickEvent,
+	#superclass : #Object,
 	#instVars : [
 		'element',
 		'dateAndTime',
 		'trackId'
 	],
-	#category : 'BigI',
-	#package : 'BigI'
+	#category : 'BigI'
 }
 
-{ #category : 'instance creation' }
+{ #category : #'instance creation' }
 ClickEvent class >> element: aString dateAndTime: aDateAndTime [
 
 	^ self new
@@ -19,7 +18,7 @@ ClickEvent class >> element: aString dateAndTime: aDateAndTime [
 		  yourself
 ]
 
-{ #category : 'instance creation' }
+{ #category : #'instance creation' }
 ClickEvent class >> element: aString dateAndTime: aDateAndTime trackId: anotherString [
 
 	^ self new
@@ -29,7 +28,7 @@ ClickEvent class >> element: aString dateAndTime: aDateAndTime trackId: anotherS
 		  yourself
 ]
 
-{ #category : 'instance creation' }
+{ #category : #'instance creation' }
 ClickEvent class >> fromJSON: aJSON [
 
 	| dateAndTime |
@@ -37,44 +36,44 @@ ClickEvent class >> fromJSON: aJSON [
 	^ self element: (aJSON at: #element) dateAndTime: dateAndTime trackId: (aJSON at: #trackId)
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 ClickEvent >> dateAndTime [
 
 	^ dateAndTime
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 ClickEvent >> dateAndTime: anObject [
 
 	dateAndTime := anObject
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 ClickEvent >> element [
 
 	^ element
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 ClickEvent >> element: anObject [
 
 	element := anObject
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 ClickEvent >> isSelection [
 
 	^ ({ nil. 'button="back"'. 'button="next"' } includes: self trackId)
 		  not
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 ClickEvent >> isSelectionClick [
 
 	^ self selectionTrackIds includes: self trackIdPrefix
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 ClickEvent >> selectionKind [
 
 	^ self trackIdPrefixesToSelectionKinds
@@ -82,26 +81,26 @@ ClickEvent >> selectionKind [
 		  "ifAbsent: 'N/A'"
 ]
 
-{ #category : 'accessing - definitions' }
+{ #category : #'accessing - definitions' }
 ClickEvent >> selectionTrackIds [
 
 	^ { #'theatre-card='. #'schedule='. #'show-time='. #'movie-card='.
 	  #'seat=' }
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 ClickEvent >> trackId [
 
 	^ trackId
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 ClickEvent >> trackId: anObject [
 
 	trackId := anObject
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 ClickEvent >> trackIdPrefix [
 
 	^ self trackId
@@ -109,7 +108,7 @@ ClickEvent >> trackIdPrefix [
 		  ifNotNil: [ :text | (text splitOn: $") first ]
 ]
 
-{ #category : 'private' }
+{ #category : #private }
 ClickEvent >> trackIdPrefixesToSelectionKinds [
 
 	^ { 
@@ -121,7 +120,7 @@ ClickEvent >> trackIdPrefixesToSelectionKinds [
 		  ('movie-card=' -> #movie) } asDictionary
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 ClickEvent >> trackValue [
 
 	^ self trackId
