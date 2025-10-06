@@ -1,6 +1,6 @@
-Extension { #name : #Object }
+Extension { #name : 'Object' }
 
-{ #category : #'*BigI' }
+{ #category : '*BigI' }
 Object >> inOrderedCollection [
 
 	^ OrderedCollection with: self

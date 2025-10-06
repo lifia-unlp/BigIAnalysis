@@ -1,6 +1,6 @@
-Extension { #name : #SequenceableCollection }
+Extension { #name : 'SequenceableCollection' }
 
-{ #category : #'*BigI' }
+{ #category : '*BigI' }
 SequenceableCollection >> collapseRuns [
 
 	"Returns a new collection with consecutive duplicate elements removed."
