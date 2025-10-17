@@ -4,17 +4,16 @@ This is a sequence of PageVisits that models an interaction from either
 - a visit to the seat selection page
 "
 Class {
-	#name : 'InteractionRun',
-	#superclass : 'Object',
+	#name : #InteractionRun,
+	#superclass : #Object,
 	#instVars : [
 		'pageVisits',
 		'finalSelections'
 	],
-	#category : 'BigI',
-	#package : 'BigI'
+	#category : #BigI
 }
 
-{ #category : 'instance creation' }
+{ #category : #'instance creation' }
 InteractionRun class >> visits: somePageVisits [
 
 	^ self new
@@ -22,25 +21,55 @@ InteractionRun class >> visits: somePageVisits [
 		  yourself
 ]
 
-{ #category : 'accessing' }
+{ #category : #testing }
+InteractionRun >> backtrackSequences [
+
+	^ #( v1 theatre date show seat summary ) overlappingPairsCollect: [ 
+		  :prev 
+		  :next | 
+		  { 
+			  next.
+			  prev.
+			  next } collect: #asString ]
+]
+
+{ #category : #testing }
+InteractionRun >> correctionsToRightCount [
+
+	^ self onScreenCorrections count: #finalValueIsRight
+]
+
+{ #category : #testing }
+InteractionRun >> correctionsToWrongCount [
+
+	^ self onScreenCorrections count: #finalValueIsWrong
+]
+
+{ #category : #accessing }
 InteractionRun >> errorsCount [
 
 	^ self variation errorsIn: self pageVisits last urlParameters
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 InteractionRun >> finalSelections [
 
 	^ finalSelections
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 InteractionRun >> finalSelections: anObject [
 
 	finalSelections := anObject
 ]
 
-{ #category : 'testing' }
+{ #category : #accessing }
+InteractionRun >> hasCorrections [
+
+	^ self onScreenCorrections isNotEmpty
+]
+
+{ #category : #testing }
 InteractionRun >> hasLargeLoops [
 
 	| largeLoopSequence candidateLoopStart candidateLoop |
@@ -56,7 +85,31 @@ InteractionRun >> hasLargeLoops [
 	^ (candidateLoop first: 2) noneSatisfy: #hasSelectionClicks
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
+InteractionRun >> hasSimpleBacktracks [
+
+	^ self simpleBacktracks size > 0
+]
+
+{ #category : #testing }
+InteractionRun >> isPartOfLargeLoop: aSequence [
+
+	^ self largeLoops anySatisfy: [ :largeLoop | 
+		  largeLoop includes: aSequence first ]
+]
+
+{ #category : #testing }
+InteractionRun >> isStraightRun [
+
+	| sequence |
+	sequence := self pageVisits collect: #pageName.
+
+	^ sequence = #( v1 theatre date show seat summary )
+	  | (sequence = #( v1 theatre date show seat ))
+	  | (sequence = #( theatre date show seat ))
+]
+
+{ #category : #testing }
 InteractionRun >> largeLoops [
 
 	| largeLoopSequence loops |
@@ -72,7 +125,7 @@ InteractionRun >> largeLoops [
 	^ loops
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 InteractionRun >> largeLoopsTime [
 
 	^ self largeLoops flattened
@@ -80,7 +133,7 @@ InteractionRun >> largeLoopsTime [
 		  into: [ :total :visit | total + visit totalTime ]
 ]
 
-{ #category : 'analyzing' }
+{ #category : #analyzing }
 InteractionRun >> mergedWith: anInteractionRun [
 
 	"Attempt to merge with anInteractionRun if both are part of the same attempt"
@@ -90,25 +143,39 @@ InteractionRun >> mergedWith: anInteractionRun [
 		  ifFalse: [ self ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 InteractionRun >> onScreenCorrections [
 
 	^ self pageVisits flatCollect: #corrections
 ]
 
-{ #category : 'accessing' }
+{ #category : #testing }
+InteractionRun >> outcomeAchieved [
+
+	^ self variation outcomeAchievedForRun: self
+]
+
+{ #category : #accessing }
 InteractionRun >> pageVisits [
 
 	^ pageVisits
 ]
 
-{ #category : 'private' }
+{ #category : #private }
 InteractionRun >> populateFinalSelections [
 
 	self finalSelections: self pageVisits last urlParameters
 ]
 
-{ #category : 'analyzing' }
+{ #category : #accessing }
+InteractionRun >> seatSelection [
+
+	^ self pageVisits last selectionClicks
+		  ifEmpty: [ 'N/A' ]
+		  ifNotEmpty: [ :clicks | clicks last trackValue ]
+]
+
+{ #category : #analyzing }
 InteractionRun >> shouldMergeWith: anInteractionRun [
 
 	"Determine whether I should merge with anInteractionRun, i.e. we are part of the same attempt"
@@ -123,13 +190,62 @@ InteractionRun >> shouldMergeWith: anInteractionRun [
 	^ sameSelections & noCorrections
 ]
 
-{ #category : 'analyzing' }
+{ #category : #testing }
+InteractionRun >> simpleBacktracks [
+
+	| candidateBacktracks backtracks |
+	candidateBacktracks := OrderedCollection new.
+	self pageVisits doWithIndex: [ :visit :index | 
+		| largeEnough |
+		largeEnough := index <= (self pageVisits size - 2).
+		largeEnough ifTrue: [ 
+			| eachSequence |
+			eachSequence := self pageVisits copyFrom: index to: index + 2.
+			(self backtrackSequences includes:
+				 (eachSequence collect: #pageName)) ifTrue: [ 
+				candidateBacktracks add: eachSequence ] ] ].
+
+	backtracks := candidateBacktracks reject: [ :candidate | 
+		              self isPartOfLargeLoop: candidate ].
+
+	^ backtracks
+]
+
+{ #category : #testing }
+InteractionRun >> smallLoopsCount [
+
+	^ self simpleBacktracks size
+]
+
+{ #category : #testing }
+InteractionRun >> smallLoopsTime [
+
+	^ self simpleBacktracks flattened
+		  inject: Duration zero
+		  into: [ :total :visit | total + visit totalTime ]
+]
+
+{ #category : #'accessing - task types' }
+InteractionRun >> taskType [
+
+	self type0aCondition ifTrue: [ ^ '0a' ].
+	self type0nCondition ifTrue: [ ^ '0n' ].
+	self type1aCondition ifTrue: [ ^ '1a' ].
+	self type1nCondition ifTrue: [ ^ '1n' ].
+	self type2aCondition ifTrue: [ ^ '2a' ].
+	self type2nCondition ifTrue: [ ^ '2n' ].
+	self type3aCondition ifTrue: [ ^ '3a' ].
+	self type3nCondition ifTrue: [ ^ '3n' ].
+	^ 'other'
+]
+
+{ #category : #analyzing }
 InteractionRun >> totalTime [
 
 	^ self pageVisits sum: #totalTime
 ]
 
-{ #category : 'printing' }
+{ #category : #printing }
 InteractionRun >> traceString [
 
 	^ String streamContents: [ :stream |
@@ -138,39 +254,89 @@ InteractionRun >> traceString [
 			  separatedBy: [ stream << ' -> ' ] ]
 ]
 
-{ #category : 'accessing' }
+{ #category : #'accessing - task types' }
+InteractionRun >> type0aCondition [
+
+	^ self isStraightRun & self hasCorrections not & self outcomeAchieved
+]
+
+{ #category : #'accessing - task types' }
+InteractionRun >> type0nCondition [
+
+	^ self isStraightRun & self hasCorrections not & self outcomeAchieved not
+]
+
+{ #category : #'accessing - task types' }
+InteractionRun >> type1aCondition [
+
+	^ self isStraightRun & self hasCorrections & self outcomeAchieved
+]
+
+{ #category : #'accessing - task types' }
+InteractionRun >> type1nCondition [
+
+	^ self isStraightRun & self hasCorrections & self outcomeAchieved not
+]
+
+{ #category : #'accessing - task types' }
+InteractionRun >> type2aCondition [
+
+	^ self hasSimpleBacktracks & self hasCorrections not
+	  & self outcomeAchieved
+]
+
+{ #category : #'accessing - task types' }
+InteractionRun >> type2nCondition [
+
+	^ self hasSimpleBacktracks & self hasCorrections not
+	  & self outcomeAchieved not
+]
+
+{ #category : #'accessing - task types' }
+InteractionRun >> type3aCondition [
+
+	^ self hasSimpleBacktracks & self hasCorrections & self outcomeAchieved 
+]
+
+{ #category : #'accessing - task types' }
+InteractionRun >> type3nCondition [
+
+	^ self hasSimpleBacktracks & self hasCorrections & self outcomeAchieved not
+]
+
+{ #category : #accessing }
 InteractionRun >> variation [
 
 	^ self pageVisits last variation
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 InteractionRun >> visits [
 	"Just an alias for convenience"
 
 	^ pageVisits
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 InteractionRun >> visits: somePageVisits [
 
 	pageVisits := somePageVisits.
 	self populateFinalSelections
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 InteractionRun >> visitsCount [
 
 	^ self pageVisits size
 ]
 
-{ #category : 'copying' }
+{ #category : #copying }
 InteractionRun >> withExtraVisits: aCollection [
 
 	^ self copy visits: self pageVisits , aCollection
 ]
 
-{ #category : 'copying' }
+{ #category : #copying }
 InteractionRun >> withoutInitialBacktrack [
 
 	| first2Visits traceIsRight noCorrections remaindingVisits |

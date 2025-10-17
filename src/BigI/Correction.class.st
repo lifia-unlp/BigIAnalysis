@@ -1,15 +1,14 @@
 Class {
-	#name : 'Correction',
-	#superclass : 'Object',
+	#name : #Correction,
+	#superclass : #Object,
 	#instVars : [
 		'clicks',
 		'variation'
 	],
-	#category : 'BigI',
-	#package : 'BigI'
+	#category : 'BigI'
 }
 
-{ #category : 'instance creation' }
+{ #category : #'instance creation' }
 Correction class >> fromClicks: someClicks andVariation: aVariation [
 
 	^ self new
@@ -18,37 +17,37 @@ Correction class >> fromClicks: someClicks andVariation: aVariation [
 		  yourself
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 Correction >> clicks [
 
 	^ clicks
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 Correction >> clicks: someClicks [
 
 	clicks := someClicks
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 Correction >> finalValueIsRight [
 
 	^ self variation selectionClickIsRight: self clicks last
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 Correction >> finalValueIsWrong [
 
 	^ self finalValueIsRight not
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 Correction >> initialValueIsRight [
 
 	^ self variation selectionClickIsRight: self clicks first
 ]
 
-{ #category : 'testing' }
+{ #category : #testing }
 Correction >> matchesPattern: aPattern [
 
 	"Obscure method :) a pattern is a string asking for initial and final values combinations"
@@ -61,7 +60,7 @@ Correction >> matchesPattern: aPattern [
 	^ matchesFirst & matchesSecond
 ]
 
-{ #category : 'printing' }
+{ #category : #printing }
 Correction >> printOn: aStream [
 
 	| from to |
@@ -79,13 +78,13 @@ Correction >> printOn: aStream [
 	aStream << ')'
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 Correction >> variation [
 
 	^ variation
 ]
 
-{ #category : 'accessing' }
+{ #category : #accessing }
 Correction >> variation: aVariation [
 
 	variation := aVariation
