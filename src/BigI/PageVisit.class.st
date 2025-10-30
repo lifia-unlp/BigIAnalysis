@@ -59,6 +59,14 @@ PageVisit >> correctionsCount [
 ]
 
 { #category : #accessing }
+PageVisit >> correctionsTime [
+
+	^ self corrections
+		  inject: Duration zero
+		  into: [ :totalTime :time | totalTime + time ]
+]
+
+{ #category : #accessing }
 PageVisit >> correctionsToRight [
 
 	^ self corrections select: #finalValueIsRight

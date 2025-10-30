@@ -92,17 +92,17 @@ PurchaseTask >> attemptsLinesString [
 			  stream << ','.
 			  stream << attempt smallLoopsCount asString.
 			  stream << ','.
-			  stream << attempt smallLoopsTime asString.
-			  stream << ','.
 			  stream << attempt smallLoopsTime asSeconds asString.
 			  stream << ','.
 			  stream << attempt correctionsToRightCount asString.
 			  stream << ','.
 			  stream << attempt correctionsToWrongCount asString.
 			  stream << ','.
-			  stream << attempt totalTime asString.
+			  stream << attempt onPageCorrectionsTime asSeconds asString.
 			  stream << ','.
 			  stream << attempt totalTime asSeconds asString.
+			  stream << ','.
+			  stream << attempt interactionStepsCount asString.
 			  stream << ','.
 			  stream << attempt traceString.
 			  stream cr ] ]
@@ -114,7 +114,7 @@ PurchaseTask >> attemptslinesString [
 	^ String streamContents: [ :stream | 
 		  self attempts withIndexDo: [ :attempt :n | 
 			  | corrections |
-			  corrections := attempt onScreenCorrections.
+			  corrections := attempt onPageCorrections.
 			  self prolificId printOn: stream.
 			  stream nextPut: $,.
 			  self variationId asNumber printOn: stream.
@@ -444,7 +444,7 @@ PurchaseTask >> movieSelections [
 ]
 
 { #category : #accessing }
-PurchaseTask >> onScreenCorrections [
+PurchaseTask >> onPageCorrections [
 
 	^ self pageVisits flatCollect: #corrections
 ]

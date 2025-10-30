@@ -24,25 +24,31 @@ InteractionRun class >> visits: somePageVisits [
 { #category : #testing }
 InteractionRun >> backtrackSequences [
 
-	^ #( v1 theatre date show seat summary ) overlappingPairsCollect: [ 
-		  :prev 
-		  :next | 
-		  { 
-			  next.
-			  prev.
-			  next } collect: #asString ]
+	| single all|
+	single := #( v1 theatre date show seat ) overlappingPairsCollect: [ 
+		          :prev 
+		          :next | 
+		          { next . prev . next } collect: #asString ].
+	all:= single asOrderedCollection.
+	all 
+		add: #(date theatre v1 theatre date);
+		add: #(show date theatre v1 theatre date show);
+		add: #(seat show date theatre v1 theatre date show seat);
+		add: #(show date theatre date show);
+		add: #(seat show date show seat).
+	^all
 ]
 
 { #category : #testing }
 InteractionRun >> correctionsToRightCount [
 
-	^ self onScreenCorrections count: #finalValueIsRight
+	^ self onPageCorrections count: #finalValueIsRight
 ]
 
 { #category : #testing }
 InteractionRun >> correctionsToWrongCount [
 
-	^ self onScreenCorrections count: #finalValueIsWrong
+	^ self onPageCorrections count: #finalValueIsWrong
 ]
 
 { #category : #accessing }
@@ -66,7 +72,7 @@ InteractionRun >> finalSelections: anObject [
 { #category : #accessing }
 InteractionRun >> hasCorrections [
 
-	^ self onScreenCorrections isNotEmpty
+	^ self onPageCorrections isNotEmpty
 ]
 
 { #category : #testing }
@@ -88,7 +94,22 @@ InteractionRun >> hasLargeLoops [
 { #category : #testing }
 InteractionRun >> hasSimpleBacktracks [
 
-	^ self simpleBacktracks size > 0
+	^ self simpleBacktracks isNotEmpty
+]
+
+{ #category : #testing }
+InteractionRun >> hasSmallLoops [
+
+	^ self smallLoops isNotEmpty
+]
+
+{ #category : #'accessing - task types' }
+InteractionRun >> interactionStepsCount [
+
+	| onPageClicks navigations |
+	onPageClicks := self visits sumNumbers: [ :visit | visit clicks size ].
+	navigations := self visitsCount - 1.
+	^ onPageClicks + navigations
 ]
 
 { #category : #testing }
@@ -144,9 +165,17 @@ InteractionRun >> mergedWith: anInteractionRun [
 ]
 
 { #category : #accessing }
-InteractionRun >> onScreenCorrections [
+InteractionRun >> onPageCorrections [
 
 	^ self pageVisits flatCollect: #corrections
+]
+
+{ #category : #accessing }
+InteractionRun >> onPageCorrectionsTime [
+
+	^ self onPageCorrections
+		  inject: Duration zero
+		  into: [ :totalTime :correction | totalTime + correction time ]
 ]
 
 { #category : #testing }
@@ -186,7 +215,7 @@ InteractionRun >> shouldMergeWith: anInteractionRun [
 	| sameSelections noCorrections |
 	sameSelections := self finalSelections
 	                  = anInteractionRun finalSelections.
-	noCorrections := anInteractionRun onScreenCorrections isEmpty.
+	noCorrections := anInteractionRun onPageCorrections isEmpty.
 	^ sameSelections & noCorrections
 ]
 
@@ -212,15 +241,43 @@ InteractionRun >> simpleBacktracks [
 ]
 
 { #category : #testing }
+InteractionRun >> smallLoops [
+
+	| candidateBacktracks |
+	candidateBacktracks := OrderedCollection new.
+	self pageVisits doWithIndex: [ :visit :index | 
+		| largeEnough |
+		largeEnough := index <= (self pageVisits size - 2).
+		largeEnough ifTrue: [ 
+			| eachSequence |
+			eachSequence := self pageVisits copyFrom: index to: index + 2.
+			(self backtrackSequences includes:
+				 (eachSequence collect: #pageName)) ifTrue: [ 
+				candidateBacktracks add: eachSequence ] ] ].
+	self pageVisits doWithIndex: [ :visit :index | 
+		| largeEnough |
+		largeEnough := index <= (self pageVisits size - 4).
+		largeEnough ifTrue: [ 
+			| eachSequence |
+			eachSequence := self pageVisits copyFrom: index to: index + 4.
+			(self backtrackSequences includes:
+				 (eachSequence collect: #pageName)) ifTrue: [
+				candidateBacktracks add: eachSequence ] ] ].
+
+
+	^ candidateBacktracks
+]
+
+{ #category : #testing }
 InteractionRun >> smallLoopsCount [
 
-	^ self simpleBacktracks size
+	^ self smallLoops size
 ]
 
 { #category : #testing }
 InteractionRun >> smallLoopsTime [
 
-	^ self simpleBacktracks flattened
+	^ self smallLoops flattened
 		  inject: Duration zero
 		  into: [ :total :visit | total + visit totalTime ]
 ]
@@ -281,27 +338,27 @@ InteractionRun >> type1nCondition [
 { #category : #'accessing - task types' }
 InteractionRun >> type2aCondition [
 
-	^ self hasSimpleBacktracks & self hasCorrections not
+	^ self hasSmallLoops & self hasCorrections not
 	  & self outcomeAchieved
 ]
 
 { #category : #'accessing - task types' }
 InteractionRun >> type2nCondition [
 
-	^ self hasSimpleBacktracks & self hasCorrections not
+	^ self hasSmallLoops & self hasCorrections not
 	  & self outcomeAchieved not
 ]
 
 { #category : #'accessing - task types' }
 InteractionRun >> type3aCondition [
 
-	^ self hasSimpleBacktracks & self hasCorrections & self outcomeAchieved 
+	^ self hasSmallLoops & self hasCorrections & self outcomeAchieved 
 ]
 
 { #category : #'accessing - task types' }
 InteractionRun >> type3nCondition [
 
-	^ self hasSimpleBacktracks & self hasCorrections & self outcomeAchieved not
+	^ self hasSmallLoops & self hasCorrections & self outcomeAchieved not
 ]
 
 { #category : #accessing }

@@ -5,7 +5,7 @@ Class {
 		'clicks',
 		'variation'
 	],
-	#category : 'BigI'
+	#category : #BigI
 }
 
 { #category : #'instance creation' }
@@ -76,6 +76,12 @@ Correction >> printOn: aStream [
 	aStream << ' | '.
 	aStream << (from , to).
 	aStream << ')'
+]
+
+{ #category : #accessing }
+Correction >> time [
+
+	^ self clicks last dateAndTime - self clicks first dateAndTime
 ]
 
 { #category : #accessing }

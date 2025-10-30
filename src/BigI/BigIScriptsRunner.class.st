@@ -79,7 +79,7 @@ BigIScriptsRunner >> writeAttemptsSummariesOn: filename [
 	"Format agreed on Oct 10"
 
 	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
-		#( prolific_id variationId attempt_number iterations type smallLoops smallLoopsTime smallLoopsTimeSecs toRight toWrong time timeSecs trace)
+		#( prolific_id variationId attempt_number iterations type smallLoops smallLoopsTimeSecs toRight toWrong correctionsTime timeSecs interactionStepsCount trace)
 			do: [ :header | stream << header ]
 			separatedBy: [ stream << ',' ].
 		stream cr.
