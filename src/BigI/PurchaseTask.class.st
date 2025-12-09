@@ -258,6 +258,22 @@ PurchaseTask >> finalSelections [
 	^ self pageVisits last urlParameters
 ]
 
+{ #category : #analyzing }
+PurchaseTask >> freshSeatVisitAttempts [
+
+	"Each first attempt with a particular set of selections"
+
+	| freshVisits theatreId newSelection theatreIsRight |
+	freshVisits := OrderedCollection new.
+	self seatVisits do: [ :visit | 
+		theatreId := visit urlParameters at: #theatreId.
+		theatreIsRight := self variation theatreIdIsRight: theatreId.
+		newSelection := freshVisits noneSatisfy: [ :previous | 
+			                theatreId = (previous urlParameters at: #theatreId) ].
+		newSelection & theatreIsRight ifTrue: [ freshVisits add: visit ] ].
+	^ freshVisits
+]
+
 { #category : #accessing }
 PurchaseTask >> fullTime [
 
@@ -311,7 +327,7 @@ PurchaseTask >> interactionRuns [
 	"Simple split by visit to the seat selection page"
 
 	| areSeats seatVisits runsToSeat completeRuns |
-	areSeats := [ :visit | (visit stepName beginsWith: '/seat') & visit hasSelectionClicks ].
+	areSeats := [ :visit | (visit stepName beginsWith: '/seat')].
 	seatVisits := (self pageVisits select: areSeats) asOrderedCollection.
 	runsToSeat := (self pageVisits splitOn: areSeats) allButLast.
 	completeRuns := runsToSeat
@@ -335,6 +351,23 @@ PurchaseTask >> isStraightRun [
 
 	^ (self pageVisits collect: #pageName)
 	  = #( v1 theatre date show seat summary )
+]
+
+{ #category : #accessing }
+PurchaseTask >> iterations [
+	"Split by visit to the seat selection page with a new (and correct) theatre choice"
+
+	| areFreshSeatVisits seatVisits runsToSeat completeRuns |
+	areFreshSeatVisits := [ :visit | self freshSeatVisitAttempts includes: visit].
+	seatVisits := (self pageVisits select: areFreshSeatVisits) asOrderedCollection.
+	runsToSeat := (self pageVisits splitOn: areFreshSeatVisits) allButLast.
+	completeRuns := runsToSeat
+		                with: seatVisits
+		                collect: [ :run :end | 
+		                InteractionRun visits: (run copyWith: end) ].
+	^ seatVisits
+		  ifEmpty: [ (InteractionRun visits: self pageVisits) inOrderedCollection ]
+		  ifNotEmpty: [ completeRuns ]
 ]
 
 { #category : #accessing }
@@ -474,6 +507,21 @@ PurchaseTask >> plannedIterations [
 	^ self variation iterations asNumber
 ]
 
+{ #category : #initializing }
+PurchaseTask >> populateVisitsVariationRule [
+
+	| seatVisits assignedIterations |
+	assignedIterations := Dictionary new.
+	seatVisits := self freshSeatVisitAttempts.
+	seatVisits doWithIndex: [ :seatVisit :ruleNumber | 
+		(assignedIterations includesKey: seatVisit urlParameters) ifTrue: [self halt].
+		assignedIterations
+			at: seatVisit urlParameters
+			ifAbsentPut: ruleNumber.
+		seatVisit variationRule:
+			(assignedIterations at: seatVisit urlParameters) ]
+]
+
 { #category : #accessing }
 PurchaseTask >> prolificId [
 
@@ -484,6 +532,17 @@ PurchaseTask >> prolificId [
 PurchaseTask >> prolificId: anObject [
 
 	prolificId := anObject
+]
+
+{ #category : #accessing }
+PurchaseTask >> seatVisits [
+
+	^ self pageVisits select: [ :visit | visit pageName = 'seat' ]
+]
+
+{ #category : #analyzing }
+PurchaseTask >> selectionsSequence [
+	self shouldBeImplemented.
 ]
 
 { #category : #testing }
@@ -510,13 +569,13 @@ PurchaseTask >> simpleBacktracks [
 { #category : #accessing }
 PurchaseTask >> smallLoopsCount [
 
-	^ self simpleBacktracks size
+	^ self smallLoops size
 ]
 
 { #category : #accessing }
 PurchaseTask >> smallLoopsTime [
 
-	^ self simpleBacktracks flattened
+	^ self smallLoops flattened
 		  inject: Duration zero
 		  into: [ :total :visit | total + visit totalTime ]
 ]

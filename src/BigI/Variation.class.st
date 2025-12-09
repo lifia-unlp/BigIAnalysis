@@ -8,7 +8,8 @@ Class {
 		'time',
 		'iterations',
 		'distance',
-		'seat'
+		'seat',
+		'rules'
 	],
 	#classVars : [
 		'variations'
@@ -33,6 +34,7 @@ Variation class >> fromJSON: aDictionary [
 		  distance: (aDictionary at: #distance);
 		  seat: (aDictionary at: #seat);
 		  iterations: (aDictionary at: #iterationLimit);
+		  rules: (aDictionary at: #rules);
 		  yourself
 ]
 
@@ -59,6 +61,18 @@ Variation class >> variations [
 Variation class >> withId: anId [
 
 	^ self all detect: [ :variation | variation id asNumber == anId asNumber ]
+]
+
+{ #category : #testing }
+Variation >> choicesAreRight: choicesDictionary [
+
+	"Excluding seat - intended for PageVisits to seat page"
+
+	choicesDictionary size < 5 ifTrue: [ ^ false ].
+	^ self movie = (choicesDictionary at: #movieId)
+	  & ((self distanceFor: (choicesDictionary at: #theatreId))
+		   < self distance asNumber)
+	  & (self time = (choicesDictionary at: #time))
 ]
 
 { #category : #testing }
@@ -199,6 +213,17 @@ Variation >> requiredSelections [
 ]
 
 { #category : #accessing }
+Variation >> rules [
+	^ rules
+]
+
+{ #category : #accessing }
+Variation >> rules: aCollection [
+
+	rules := aCollection
+]
+
+{ #category : #accessing }
 Variation >> seat [
 
 	^ seat
@@ -222,6 +247,12 @@ Variation >> selectionClickIsRight: aClickEvent [
 	| methodName |
 	methodName := (aClickEvent selectionKind , 'IsRight:') asSymbol.
 	^ self perform: methodName with: aClickEvent
+]
+
+{ #category : #testing }
+Variation >> theatreIdIsRight: aTheatreId [
+
+	^ (self distanceFor: aTheatreId) < self distance asNumber
 ]
 
 { #category : #testing }

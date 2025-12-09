@@ -8,7 +8,8 @@ Class {
 		'startTime',
 		'endTime',
 		'transitionDuration',
-		'variation'
+		'variation',
+		'variationRule'
 	],
 	#category : #BigI
 }
@@ -25,6 +26,12 @@ PageVisit class >> fromJSON: aJSON [
 	newVisit endTime: (aJSON at: #visitEndTime) asDateAndTime.
 	newVisit transitionDuration: (Duration milliSeconds: (aJSON at: #pageTransitionDuration)).
 	^ newVisit
+]
+
+{ #category : #testing }
+PageVisit >> choicesAreRight [
+
+	^ self variation choicesAreRight: self urlParameters
 ]
 
 { #category : #accessing }
@@ -48,8 +55,13 @@ PageVisit >> corrections [
 		                        having: [ :clicksGroup | 
 		                        (clicksGroup collect: #trackValue as: Set)
 			                        size > 1 ].
-	^ valueChangeSequences values collect: [ :clicksSequence | 
-		  Correction fromClicks: clicksSequence andVariation: self variation ]
+	^ valueChangeSequences values flatCollect: [ :clicksSequence | 
+		  clicksSequence overlappingPairsCollect: [ :selection :correction | 
+			  Correction
+				  fromClicks: { 
+						  selection.
+						  correction } asOrderedCollection
+				  andVariation: self variation ] ]
 ]
 
 { #category : #accessing }
@@ -124,6 +136,43 @@ PageVisit >> hasSelectionClicks [
 PageVisit >> initialize [
 
 	clicks := OrderedCollection new
+]
+
+{ #category : #testing }
+PageVisit >> isBuggy [
+
+	^ (self clicks select: #isSelectionClick thenCollect: #selectionKind) asSet size > 1
+]
+
+{ #category : #printing }
+PageVisit >> lineString [
+	^String streamContents: [ :stream |
+		stream << self pageName.
+		stream << ','.
+		stream << self clicks size asString.
+		stream << ','.
+		stream << self correctionsCount asString.
+		stream << ','.
+		stream << self numberOfChoices asString.
+		stream << ','.
+		stream << self totalTime asSeconds printString.
+		stream cr.
+		]
+]
+
+{ #category : #accessing }
+PageVisit >> numberOfChoices [
+
+	self pageName = 'v1' ifTrue: [ ^ 8 ].
+	self pageName = 'theatre' ifTrue: [ ^ 7 ].
+	self pageName = 'date' ifTrue: [ ^ 7 ].
+	self pageName = 'show' ifTrue: [ ^ 6 ].
+	self pageName = 'summary' ifTrue: [ ^ '-' ].
+	self pageName = 'seat' ifTrue: [ 
+		| rule |
+		self variationRule ifNil: [ ^'N/A' ].
+		rule := self variation rules at: (self variationRule - 1) printString.
+		^ (rule at: 'availableSeats') size ]
 ]
 
 { #category : #accessing }
@@ -231,6 +280,18 @@ PageVisit >> variation [
 PageVisit >> variation: anObject [
 
 	variation := anObject
+]
+
+{ #category : #accessing }
+PageVisit >> variationRule [
+
+	^ variationRule
+]
+
+{ #category : #accessing }
+PageVisit >> variationRule: anObject [
+
+	variationRule := anObject
 ]
 
 { #category : #accessing }

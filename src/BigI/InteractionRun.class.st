@@ -243,6 +243,50 @@ InteractionRun >> simpleBacktracks [
 { #category : #testing }
 InteractionRun >> smallLoops [
 
+	| pagesOrder loops |
+	pagesOrder := #( v1 theatre date show seat ).
+	loops := OrderedCollection new.
+
+	self pageVisits allButLast doWithIndex: [ :visit :index | 
+		| following wentBack returned loop largerLoopExists|
+		"1) find Error Recognition Screens"
+		following := self pageVisits copyAfter: visit.
+		wentBack := (pagesOrder indexOf: following first pageName)
+		            < (pagesOrder indexOf: visit pageName).
+		returned := following anySatisfy: [ :followingVisit | 
+			            followingVisit pageName = visit pageName ].
+		wentBack & returned ifTrue: [ 
+			loop := visit inOrderedCollection
+			        ,
+				        (following copyUpThrough:
+					         (following detect: [ :returnVisit | 
+						          returnVisit pageName = visit pageName ])).
+			largerLoopExists := loops anySatisfy: [ :existing | 
+				                    (existing
+					                     indexOfSubCollection: loop
+					                     startingAt: 1) > 0 ].
+			largerLoopExists ifFalse: [ loops add: loop ].
+			 ] ].
+	^ loops
+]
+
+{ #category : #testing }
+InteractionRun >> smallLoopsCount [
+
+	^ self smallLoops size
+]
+
+{ #category : #testing }
+InteractionRun >> smallLoopsTime [
+
+	^ self smallLoops flattened
+		  inject: Duration zero
+		  into: [ :total :visit | total + visit totalTime ]
+]
+
+{ #category : #testing }
+InteractionRun >> smallLoopz [
+
 	| candidateBacktracks |
 	candidateBacktracks := OrderedCollection new.
 	self pageVisits doWithIndex: [ :visit :index | 
@@ -266,20 +310,6 @@ InteractionRun >> smallLoops [
 
 
 	^ candidateBacktracks
-]
-
-{ #category : #testing }
-InteractionRun >> smallLoopsCount [
-
-	^ self smallLoops size
-]
-
-{ #category : #testing }
-InteractionRun >> smallLoopsTime [
-
-	^ self smallLoops flattened
-		  inject: Duration zero
-		  into: [ :total :visit | total + visit totalTime ]
 ]
 
 { #category : #'accessing - task types' }
@@ -396,7 +426,7 @@ InteractionRun >> withExtraVisits: aCollection [
 { #category : #copying }
 InteractionRun >> withoutInitialBacktrack [
 
-	| first2Visits traceIsRight noCorrections remaindingVisits |
+	| first2Visits traceIsRight noCorrections |
 	self visits size <= 2 ifTrue: [ ^ self ].
 	first2Visits := self visits first: 2.
 	noCorrections := first2Visits noneSatisfy: #hasCorrections.

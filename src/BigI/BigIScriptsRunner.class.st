@@ -14,7 +14,14 @@ Class {
 { #category : #accessing }
 BigIScriptsRunner class >> instance [
 
-	^ Instance ifNil: [ Instance := self new ]
+	^ Instance ifNil: [ Instance := super new ]
+]
+
+{ #category : #accessing }
+BigIScriptsRunner class >> new [
+
+	^ self error:
+		  'Yeah, don''t do that with a singleton. Better #resetInstance.'
 ]
 
 { #category : #accessing }
@@ -33,20 +40,39 @@ BigIScriptsRunner >> allPurchases [
 ]
 
 { #category : #accessing }
+BigIScriptsRunner >> allVisits [
+
+	^ (self tasks flatCollect: #pageVisits) reject: #isBuggy
+]
+
+{ #category : #accessing }
 BigIScriptsRunner >> directory [
 
 	^ '/Users/juliangrigera/Desktop/Big-I/'
 ]
 
 { #category : #intializing }
+BigIScriptsRunner >> exclusionCriteria [
+
+	^ [ :task | task totalTime > 15 minutes ]
+]
+
+{ #category : #intializing }
 BigIScriptsRunner >> initialize [
 
-	tasks := (self directory , 'experiments/') asFileReference files 
-		         collect: [ :fileReference | 
-			         PurchaseTask fromJSON:
-				         (NeoJSONReader fromString: fileReference contents) ].
-
+	| allTasks |
+	allTasks := (self directory , 'experiments/') asFileReference files 
+		            collect: [ :fileReference | 
+			            PurchaseTask fromJSON:
+				            (NeoJSONReader fromString: fileReference contents) ].
+	tasks := allTasks reject: self exclusionCriteria.
 	variations := Variation all
+]
+
+{ #category : #'as yet unclassified' }
+BigIScriptsRunner >> populateVisitsVariationRule [
+
+	self tasks do: #populateVisitsVariationRule
 ]
 
 { #category : #accessing }
@@ -59,6 +85,12 @@ BigIScriptsRunner >> tasks [
 BigIScriptsRunner >> tasks: anObject [
 
 	tasks := anObject
+]
+
+{ #category : #accessing }
+BigIScriptsRunner >> v1tasks [
+
+	^ self tasks select: [ :task | task variation version = 'v1' ]
 ]
 
 { #category : #accessing }
@@ -79,13 +111,13 @@ BigIScriptsRunner >> writeAttemptsSummariesOn: filename [
 	"Format agreed on Oct 10"
 
 	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
-		#( prolific_id variationId attempt_number iterations type smallLoops smallLoopsTimeSecs toRight toWrong correctionsTime timeSecs interactionStepsCount trace)
+		#( prolific_id variationId attempt_number iterations type smallLoops
+		   smallLoopsTimeSecs toRight toWrong correctionsTime
+		   timeSecs interactionStepsCount trace )
 			do: [ :header | stream << header ]
 			separatedBy: [ stream << ',' ].
 		stream cr.
-		self tasks
-			select: [ :task | task variation version = 'v1' ]
-			thenDo: [ :task | stream << task attemptsLinesString ] ]
+		self v1tasks do: [ :task | stream << task attemptsLinesString ] ]
 ]
 
 { #category : #accessing }
@@ -178,4 +210,19 @@ BigIScriptsRunner >> writeTasksSummariesOn: filename [
 		self tasks
 			select: [ :task | task variation version = 'v1' ]
 			thenDo: [ :task | stream << task lineString ] ]
+]
+
+{ #category : #accessing }
+BigIScriptsRunner >> writeVisitsOn: filename [
+
+	"Format agreed on Oct 31"
+
+	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
+		#( visit_id steps_count corrections_count elements_count totalTime)
+			do: [ :header | stream << header ]
+			separatedBy: [ stream << ',' ].
+		stream cr.
+		self allVisits
+			select: [ :visit | visit variation version = 'v1' ]
+			thenDo: [ :visit | stream << visit lineString ] ]
 ]
