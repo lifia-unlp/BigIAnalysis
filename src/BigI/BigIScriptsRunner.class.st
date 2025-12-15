@@ -108,7 +108,7 @@ BigIScriptsRunner >> variations: anObject [
 { #category : #accessing }
 BigIScriptsRunner >> writeAttemptsSummariesOn: filename [
 
-	"Format agreed on Oct 10"
+	"Format agreed on Oct 10 - updated on Dec 14"
 
 	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
 		#( prolific_id variationId attempt_number iterations type smallLoops
@@ -177,6 +177,21 @@ BigIScriptsRunner >> writeIdsAndTimesOn: filename [
 			stream << ','.
 			stream << totalDuration printString.
 			stream cr ] ]
+]
+
+{ #category : #accessing }
+BigIScriptsRunner >> writeMergedAttemptsSummariesOn: filename [
+
+	"Format agreed on Oct 10 - updated on Dec 14 with MERGE criterion"
+
+	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
+		#( prolific_id variationId attempt_number iterations type smallLoops
+		   smallLoopsTimeSecs toRight toWrong correctionsTime
+		   timeSecs interactionStepsCount trace )
+			do: [ :header | stream << header ]
+			separatedBy: [ stream << ',' ].
+		stream cr.
+		self v1tasks do: [ :task | stream << task mergedAttemptsLinesString ] ]
 ]
 
 { #category : #accessing }

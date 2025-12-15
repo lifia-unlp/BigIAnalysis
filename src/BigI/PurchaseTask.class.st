@@ -465,6 +465,39 @@ PurchaseTask >> mergedAttempts [
 	^ collapsed asOrderedCollection
 ]
 
+{ #category : #printing }
+PurchaseTask >> mergedAttemptsLinesString [
+
+	^ String streamContents: [ :stream | 
+		  self mergedAttempts withIndexDo: [ :attempt :n | 
+			  stream << self prolificId.
+			  stream << ','.
+			  stream << self variationId.
+			  stream << ','.
+			  stream << n printString.
+			  stream << ','.
+			  stream << self plannedIterations asString.
+			  stream << ','.
+			  stream << attempt taskType.
+			  stream << ','.
+			  stream << attempt smallLoopsCount asString.
+			  stream << ','.
+			  stream << attempt smallLoopsTime asSeconds asString.
+			  stream << ','.
+			  stream << attempt correctionsToRightCount asString.
+			  stream << ','.
+			  stream << attempt correctionsToWrongCount asString.
+			  stream << ','.
+			  stream << attempt onPageCorrectionsTime asSeconds asString.
+			  stream << ','.
+			  stream << attempt totalTime asSeconds asString.
+			  stream << ','.
+			  stream << attempt interactionStepsCount asString.
+			  stream << ','.
+			  stream << attempt traceString.
+			  stream cr ] ]
+]
+
 { #category : #selections }
 PurchaseTask >> movieSelections [
 

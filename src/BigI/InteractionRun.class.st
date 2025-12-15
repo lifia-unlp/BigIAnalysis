@@ -243,12 +243,14 @@ InteractionRun >> simpleBacktracks [
 { #category : #testing }
 InteractionRun >> smallLoops [
 
+	"Could be smaller? Could be smaller"
+
 	| pagesOrder loops |
-	pagesOrder := #( v1 theatre date show seat ).
+	pagesOrder := #( v1 theatre date show seat summary).
 	loops := OrderedCollection new.
 
 	self pageVisits allButLast doWithIndex: [ :visit :index | 
-		| following wentBack returned loop largerLoopExists|
+		| following wentBack returned loop largerLoopExists changedSomething |
 		"1) find Error Recognition Screens"
 		following := self pageVisits copyAfter: visit.
 		wentBack := (pagesOrder indexOf: following first pageName)
@@ -265,8 +267,13 @@ InteractionRun >> smallLoops [
 				                    (existing
 					                     indexOfSubCollection: loop
 					                     startingAt: 1) > 0 ].
-			largerLoopExists ifFalse: [ loops add: loop ].
-			 ] ].
+
+			changedSomething := (loop first urlParameters at:
+				                     loop middle urlParameterName)
+			                    ~=
+			                    (loop last urlParameters at:
+				                     loop middle urlParameterName).
+			largerLoopExists not & changedSomething ifTrue: [ loops add: loop ] ] ].
 	^ loops
 ]
 
@@ -279,7 +286,7 @@ InteractionRun >> smallLoopsCount [
 { #category : #testing }
 InteractionRun >> smallLoopsTime [
 
-	^ self smallLoops flattened
+	^ self smallLoops flattened asSet
 		  inject: Duration zero
 		  into: [ :total :visit | total + visit totalTime ]
 ]

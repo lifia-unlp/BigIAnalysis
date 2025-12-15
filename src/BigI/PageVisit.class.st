@@ -28,6 +28,16 @@ PageVisit class >> fromJSON: aJSON [
 	^ newVisit
 ]
 
+{ #category : #private }
+PageVisit >> allURLParameterNames [
+
+	"Used to link the URL parameter with the page kind, e.g. 'theatre' -> 'theatreId'"
+
+	^ Dictionary newFromPairs:
+		  #( v1 movieId theatre theatreId date scheduleId show time seat
+		     seat summary NA)
+]
+
 { #category : #testing }
 PageVisit >> choicesAreRight [
 
@@ -255,6 +265,12 @@ PageVisit >> transitionDuration [
 PageVisit >> transitionDuration: anObject [
 
 	transitionDuration := anObject
+]
+
+{ #category : #private }
+PageVisit >> urlParameterName [
+
+	^ self allURLParameterNames at: self pageName
 ]
 
 { #category : #accessing }
