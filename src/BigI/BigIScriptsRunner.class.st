@@ -187,7 +187,7 @@ BigIScriptsRunner >> writeMergedAttemptsSummariesOn: filename [
 	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
 		#( prolific_id variationId attempt_number iterations type smallLoops
 		   smallLoopsTimeSecs toRight toWrong correctionsTime
-		   timeSecs interactionStepsCount trace )
+		   timeSecs interactionStepsCount timestamp trace )
 			do: [ :header | stream << header ]
 			separatedBy: [ stream << ',' ].
 		stream cr.
@@ -215,7 +215,7 @@ BigIScriptsRunner >> writeSummarizedDataOn: filename [
 { #category : #accessing }
 BigIScriptsRunner >> writeTasksSummariesOn: filename [
 
-	"Format agreed on Sep 17"
+	"Format agreed on Sep 12"
 
 	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
 		#( prolific_id variationId iterations type smallLoops smallLoopsTime smallLoopsTimeSecs largeLoops largeLoopsTime largeLoopsTimeSecs toRight toWrong time timeSecs trace)
@@ -230,7 +230,22 @@ BigIScriptsRunner >> writeTasksSummariesOn: filename [
 { #category : #accessing }
 BigIScriptsRunner >> writeVisitsOn: filename [
 
-	"Format agreed on Oct 31"
+	"Format agreed on Dec 19"
+
+	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
+		#( participant_id timestamp variation_id planned_terations
+		   visit_id steps_count corrections_count elements_count
+		   totalTime )
+			do: [ :header | stream << header ]
+			separatedBy: [ stream << ',' ].
+		stream cr.
+		self v1tasks do: [ :task | stream << task visitsLinesString ] ]
+]
+
+{ #category : #accessing }
+BigIScriptsRunner >> writeVisitsOn_: filename [
+
+	"Format agreed on Dec 19 - backup"
 
 	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
 		#( visit_id steps_count corrections_count elements_count totalTime)

@@ -180,8 +180,9 @@ PageVisit >> numberOfChoices [
 	self pageName = 'summary' ifTrue: [ ^ '-' ].
 	self pageName = 'seat' ifTrue: [ 
 		| rule |
-		self variationRule ifNil: [ ^'N/A' ].
-		rule := self variation rules at: (self variationRule - 1) printString.
+		self variationRule ifNil: [ ^ 'N/A' ].
+		self variationRule = -1 ifTrue: [ ^ 0 ].
+		rule := self variation rules at: self variationRule printString.
 		^ (rule at: 'availableSeats') size ]
 ]
 
@@ -189,6 +190,22 @@ PageVisit >> numberOfChoices [
 PageVisit >> pageName [
 
 	^ (self stepName copyUpToSubstring: '?') allButFirst
+]
+
+{ #category : #printing }
+PageVisit >> printLineOn: aStream [
+
+	"visit_id steps_count corrections_count elements_count totalTime "
+
+	aStream << self pageName.
+	aStream << ','.
+	aStream << self clicks size asString.
+	aStream << ','.
+	aStream << self correctionsCount asString.
+	aStream << ','.
+	aStream << self numberOfChoices asString.
+	aStream << ','.
+	aStream << self totalTime asSeconds printString
 ]
 
 { #category : #printing }

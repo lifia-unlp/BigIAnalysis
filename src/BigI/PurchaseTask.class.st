@@ -263,6 +263,27 @@ PurchaseTask >> freshSeatVisitAttempts [
 
 	"Each first attempt with a particular set of selections"
 
+	| fresh maxIteration ruleNumber |
+	fresh := Dictionary new.
+	maxIteration := self variation rules.
+	ruleNumber := 0.
+	self seatVisits do: [ :seatVisit | 
+		| choicesAreRight |
+		choicesAreRight := self variation choicesAreRight:
+			                   seatVisit urlParameters.
+		choicesAreRight ifTrue: [ 
+			fresh
+				at: seatVisit urlParameters
+				ifAbsentPut: (self variation rules size - 1 min: ruleNumber).
+			ruleNumber := ruleNumber + 1 ] ].
+	^ fresh
+]
+
+{ #category : #analyzing }
+PurchaseTask >> freshSeatVisitAttempts_ [
+
+	"Each first attempt with a particular set of selections"
+
 	| freshVisits theatreId newSelection theatreIsRight |
 	freshVisits := OrderedCollection new.
 	self seatVisits do: [ :visit | 
@@ -494,6 +515,8 @@ PurchaseTask >> mergedAttemptsLinesString [
 			  stream << ','.
 			  stream << attempt interactionStepsCount asString.
 			  stream << ','.
+			  stream << attempt visits first startTime asString.
+			  stream << ','.
 			  stream << attempt traceString.
 			  stream cr ] ]
 ]
@@ -543,16 +566,26 @@ PurchaseTask >> plannedIterations [
 { #category : #initializing }
 PurchaseTask >> populateVisitsVariationRule [
 
+	| ruleForUrl |
+	ruleForUrl := self freshSeatVisitAttempts.
+	self seatVisits do: [ :seatVisit | 
+		seatVisit variationRule:
+			(ruleForUrl at: seatVisit urlParameters ifAbsent: -1) ]
+]
+
+{ #category : #initializing }
+PurchaseTask >> populateVisitsVariationRule_ [
+
 	| seatVisits assignedIterations |
 	assignedIterations := Dictionary new.
 	seatVisits := self freshSeatVisitAttempts.
 	seatVisits doWithIndex: [ :seatVisit :ruleNumber | 
-		(assignedIterations includesKey: seatVisit urlParameters) ifTrue: [self halt].
 		assignedIterations
 			at: seatVisit urlParameters
-			ifAbsentPut: ruleNumber.
+			ifAbsentPut: ruleNumber - 1.
 		seatVisit variationRule:
-			(assignedIterations at: seatVisit urlParameters) ]
+			((assignedIterations at: seatVisit urlParameters) max:
+				 self variation rules size) ]
 ]
 
 { #category : #accessing }
@@ -655,6 +688,26 @@ PurchaseTask >> variationId [
 PurchaseTask >> variationId: anObject [
 
 	variationId := anObject
+]
+
+{ #category : #printing }
+PurchaseTask >> visitsLinesString [
+
+	" Format agreed on Dec 19 "
+
+	^ String streamContents: [ :stream | 
+		  self pageVisits do: [ :visit | 
+			  stream
+				  nextPutAll: self prolificId;
+				  nextPutAll: ',';
+				  nextPutAll: visit startTime asString;
+				  nextPutAll: ',';
+				  nextPutAll: self variationId;
+				  nextPutAll: ',';
+				  nextPutAll: self variation iterations printString;
+				  nextPutAll: ','.
+			  visit printLineOn: stream.
+			  stream cr ] ]
 ]
 
 { #category : #testing }
