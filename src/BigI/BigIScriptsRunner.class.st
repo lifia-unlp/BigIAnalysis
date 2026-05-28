@@ -228,6 +228,21 @@ BigIScriptsRunner >> writeTasksSummariesOn: filename [
 ]
 
 { #category : #accessing }
+BigIScriptsRunner >> writeVisits: someVisits on: filename [
+
+	"Format agreed on Dec 19"
+
+	(self directory , filename) asFileReference writeStreamDo: [ :stream | 
+		#( participant_id timestamp variation_id planned_terations
+		   visit_id steps_count corrections_count elements_count
+		   totalTime )
+			do: [ :header | stream << header ]
+			separatedBy: [ stream << ',' ].
+		stream cr.
+		someVisits do: [ :task | stream << task visitsLinesString ] ]
+]
+
+{ #category : #accessing }
 BigIScriptsRunner >> writeVisitsOn: filename [
 
 	"Format agreed on Dec 19"
